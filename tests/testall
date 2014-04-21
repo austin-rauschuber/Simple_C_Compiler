@@ -1,0 +1,96 @@
+#!/bin/sh
+
+(cd ..; make clean; make scc)
+
+SCC=../scc
+GCC=gcc
+total=0
+totalmax=0
+
+rm -f total.txt
+
+# Limit size of files to 500K
+ulimit -f 500
+
+# Test driver
+function runtest {
+  prog=$1
+  grade=$2
+  descr=$3
+  echo ----- $prog.c: $descr -----
+  rm -f $prog $prog.s $prog.scc $prog.gcc* $prog.out*
+  $SCC $prog.c
+  $GCC -o $prog.scc $prog.s
+  $GCC -o $prog.gcc $prog.c >& $prog.gcc.out
+  $prog.scc > $prog.out.scc
+  $prog.gcc > $prog.out.gcc
+  diff $prog.out.scc $prog.out.gcc
+  if [ $? -eq 0 ]; then
+      echo Test passed...;
+      printf "%-36s: %-3d of %-3d\n" "$descr" $grade $grade >> total.txt
+      total=`expr $total + $grade`;
+  else
+      echo Test failed...
+      printf "%-36s: %-3d of %-3d\n" "$descr" 0 $grade >> total.txt
+  fi
+  totalmax=`expr $totalmax + $grade`;
+}
+
+# List of tests running
+runtest hello 3 "Simple Hello Program";
+runtest global 3 "Simple Test for Global Variables";
+runtest local 4 "Simple Test for Local Variables";
+runtest args  4 "Simple Test for Arguments";
+runtest return 3 "Simple Test for Arguments";
+runtest nested 3 "Test for nested function";
+runtest div  3 "Test for division";
+runtest expr 3 "Test expression";
+runtest expr2 3 "Test expression and vars";
+runtest rel  3 "Test Relational Operators";
+runtest equal 3 "Test Equality Operators";
+runtest and  3 "Test And Operator";
+runtest or  3 "Test Or Operator";
+runtest if  3 "Test If Statement";
+runtest while 3 "Test While Statement";
+runtest dowhile 3 "Test Do/While Statement";
+runtest for  4 "Test For Statement";
+runtest break 3 "Test break Statement";
+runtest continue 3 "Test continue Statement";
+runtest array  3 "Test arrays 1";
+runtest array2 3 "Test arrays 2";
+runtest sum 3 "Test sum of an array";
+runtest max 3 "Test max of an array";
+runtest bubblesort 4 "Bubble Sort of longs";
+runtest quicksort  3 "QuickSort of longs";
+runtest fact  3 "Test factorial";
+runtest ampersand 3 "Test ampersand operator";
+runtest char 3 "Array char access"
+runtest char2 3 "Array char assignment"
+runtest strlen 3 "Compute strlen"
+runtest quicksortstr 3 "Quicksort with strings"
+runtest queens 3 "8 queens problem"
+
+echo
+echo
+echo   "-------------------------------------------------"
+echo   "CS250: Lab 5. Compiler Project.   User:  $USER   "
+echo   "-------------------------------------------------"
+cat total.txt
+echo   "-------------------------------------------------"
+echo   "                              Total: " $total of $totalmax
+
+#printf "IO Redirection:          %-3d%s%-3d\n" $grade1 " of " $grade1max
+#printf "Pipes:                   %-3d%s%-3d\n" $grade2 " of " $grade2max
+#printf "Background and Zombie:   %-3d%s%-3d\n" $grade3 " of " $grade3max
+#printf "Environment:             %-3d%s%-3d\n" $grade4 " of " $grade4max
+#printf "Words and special chars: %-3d%s%-3d\n" $grade5 " of " $grade5max
+#printf "cd:                      %-3d%s%-3d\n" $grade6 " of " $grade6max
+#printf "Wildcarding:             %-3d%s%-3d\n" $grade7 " of " $grade7max
+#printf "Quotes and escape chars: %-3d%s%-3d\n" $grade8 " of " $grade8max
+#printf "Ctrl-C:                  %-3d%s%-3d\n" $grade9 " of " $grade9max
+#printf "Robustness:              %-3d%s%-3d\n" $grade10 " of " $grade10max
+#printf "subshell:                %-3d%s%-3d\n" $grade11 " of " $grade11max
+#printf "tilde expansion:         %-3d%s%-3d\n" $grade12 " of " $grade12max
+#echo   "--------------------------------------------------"
+#printf "Total:                   %-3d%s%-3d\n" $total " of " $totalmax
+
